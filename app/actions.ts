@@ -54,6 +54,55 @@ export async function submitCase(formData: FormData) {
   return { success: true, caseNumber: data.case_number }
 }
 
+export async function fetchAllCases(statusFilter?: string) {
+  const supabase = await createClient()
+
+  let query = supabase
+    .from("cases")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  if (statusFilter && statusFilter !== "all") {
+    query = query.eq("status", statusFilter)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    return { error: "Failed to fetch cases." }
+  }
+
+  return { cases: data ?? [] }
+}
+
+export async function updateCaseStatus(
+  caseId: string,
+  status: string,
+  adminResponse?: string
+) {
+  const supabase = await createClient()
+
+  const updateData: Record<string, string> = {
+    status,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (adminResponse !== undefined) {
+    updateData.admin_response = adminResponse
+  }
+
+  const { error } = await supabase
+    .from("cases")
+    .update(updateData)
+    .eq("id", caseId)
+
+  if (error) {
+    return { error: "Failed to update case." }
+  }
+
+  return { success: true }
+}
+
 export async function lookupCases(identifier: string) {
   const supabase = await createClient()
 
