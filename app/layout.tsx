@@ -7,13 +7,13 @@ import "./globals.css"
 const _inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
 export const metadata: Metadata = {
-  title: "School Feedback Portal",
+  title: "ADIS Wathba - Feedback Portal",
   description:
-    "Report issues, queries, and feedback to your school administration. Track case status easily.",
+    "Abu Dhabi Indian School, Al Wathba - Report issues, queries, and feedback. Track case status easily.",
 }
 
 export const viewport: Viewport = {
-  themeColor: "#2563EB",
+  themeColor: "#1e3a5f",
   userScalable: true,
 }
 

@@ -47,12 +47,12 @@ export default function AdminPage() {
         <main className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center px-4 py-8">
           <Card className="w-full">
             <CardHeader className="items-center text-center">
-              <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <Lock className="h-7 w-7 text-primary" />
+              <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-accent">
+                <Lock className="h-7 w-7 text-accent-foreground" />
               </div>
-              <CardTitle className="text-xl">Admin Login</CardTitle>
+              <CardTitle className="text-xl">ADIS Admin Login</CardTitle>
               <CardDescription>
-                Enter the admin password to access the dashboard.
+                Enter the admin password to access the ADIS Wathba dashboard.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -105,12 +105,12 @@ export default function AdminPage() {
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <ShieldCheck className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
+              <ShieldCheck className="h-5 w-5 text-accent-foreground" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground text-balance">
-                Admin Panel
+                ADIS Wathba - Admin Panel
               </h1>
               <p className="text-sm text-muted-foreground">
                 View, manage, and respond to all reported cases.

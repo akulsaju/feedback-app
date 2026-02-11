@@ -45,13 +45,13 @@ const statusConfig: Record<
   open: {
     label: "Open",
     className:
-      "bg-[hsl(210,70%,45%)]/10 text-[hsl(210,70%,45%)] border-[hsl(210,70%,45%)]/20",
+      "bg-[hsl(222,60%,22%)]/10 text-[hsl(222,60%,22%)] border-[hsl(222,60%,22%)]/20",
     icon: CircleDot,
   },
   in_progress: {
     label: "In Progress",
     className:
-      "bg-[hsl(38,92%,50%)]/10 text-[hsl(38,80%,40%)] border-[hsl(38,92%,50%)]/20",
+      "bg-[hsl(43,96%,50%)]/15 text-[hsl(43,80%,35%)] border-[hsl(43,96%,50%)]/25",
     icon: Clock,
   },
   resolved: {
@@ -62,8 +62,7 @@ const statusConfig: Record<
   },
   closed: {
     label: "Closed",
-    className:
-      "bg-muted text-muted-foreground border-border",
+    className: "bg-muted text-muted-foreground border-border",
     icon: XCircle,
   },
 }

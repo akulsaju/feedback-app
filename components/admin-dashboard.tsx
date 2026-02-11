@@ -65,13 +65,13 @@ const statusConfig: Record<
   open: {
     label: "Open",
     className:
-      "bg-[hsl(210,70%,45%)]/10 text-[hsl(210,70%,45%)] border-[hsl(210,70%,45%)]/20",
+      "bg-[hsl(222,60%,22%)]/10 text-[hsl(222,60%,22%)] border-[hsl(222,60%,22%)]/20",
     icon: CircleDot,
   },
   in_progress: {
     label: "In Progress",
     className:
-      "bg-[hsl(38,92%,50%)]/10 text-[hsl(38,80%,40%)] border-[hsl(38,92%,50%)]/20",
+      "bg-[hsl(43,96%,50%)]/15 text-[hsl(43,80%,35%)] border-[hsl(43,96%,50%)]/25",
     icon: Clock,
   },
   resolved: {
@@ -173,8 +173,8 @@ export function AdminDashboard() {
           onClick={() => setFilter("open")}
         >
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(210,70%,45%)]/10">
-              <CircleDot className="h-5 w-5 text-[hsl(210,70%,45%)]" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(222,60%,22%)]/10">
+              <CircleDot className="h-5 w-5 text-[hsl(222,60%,22%)]" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{counts.open}</p>
@@ -187,8 +187,8 @@ export function AdminDashboard() {
           onClick={() => setFilter("in_progress")}
         >
           <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(38,92%,50%)]/10">
-              <Clock className="h-5 w-5 text-[hsl(38,80%,40%)]" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(43,96%,50%)]/15">
+              <Clock className="h-5 w-5 text-[hsl(43,80%,35%)]" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
@@ -333,7 +333,7 @@ export function AdminDashboard() {
                       })}
                     </span>
                     {c.admin_response && (
-                      <span className="flex items-center gap-1 text-[hsl(142,71%,35%)]">
+                      <span className="flex items-center gap-1 text-[hsl(142,71%,45%)]">
                         <MessageSquare className="h-3 w-3" />
                         Responded
                       </span>
