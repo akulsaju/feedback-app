@@ -48,6 +48,7 @@ export async function submitCase(formData: FormData) {
     .single()
 
   if (error) {
+    console.log("[v0] submitCase error:", error)
     return { error: "Failed to submit your case. Please try again." }
   }
 
@@ -112,16 +113,33 @@ export async function lookupCases(identifier: string) {
     return { error: "Please enter your GR Number or Employee ID." }
   }
 
-  // Look up by reporter_id OR case_number
-  const { data, error } = await supabase
+  // Look up by reporter_id OR case_number using separate queries
+  // to avoid issues with special characters in .or() filter
+  const { data: byId, error: errById } = await supabase
     .from("cases")
     .select("*")
-    .or(`reporter_id.eq.${trimmed},case_number.eq.${trimmed}`)
+    .eq("reporter_id", trimmed)
     .order("created_at", { ascending: false })
 
-  if (error) {
+  const { data: byCase, error: errByCase } = await supabase
+    .from("cases")
+    .select("*")
+    .eq("case_number", trimmed)
+    .order("created_at", { ascending: false })
+
+  if (errById && errByCase) {
+    console.log("[v0] lookupCases errors:", errById, errByCase)
     return { error: "Failed to look up cases. Please try again." }
   }
+
+  // Merge results and deduplicate by id
+  const allResults = [...(byId ?? []), ...(byCase ?? [])]
+  const seen = new Set<string>()
+  const data = allResults.filter((c) => {
+    if (seen.has(c.id)) return false
+    seen.add(c.id)
+    return true
+  })
 
   if (!data || data.length === 0) {
     return { error: "No cases found for this ID or case number." }

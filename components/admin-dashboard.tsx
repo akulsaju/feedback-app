@@ -96,6 +96,7 @@ const categoryLabels: Record<string, string> = {
 }
 
 export function AdminDashboard() {
+  const [allCases, setAllCases] = useState<CaseRecord[]>([])
   const [cases, setCases] = useState<CaseRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("all")
@@ -108,6 +109,12 @@ export function AdminDashboard() {
 
   const loadCases = useCallback(async () => {
     setLoading(true)
+    // Always fetch all cases for counts
+    const allResult = await fetchAllCases("all")
+    if (allResult.cases) {
+      setAllCases(allResult.cases as CaseRecord[])
+    }
+    // Fetch filtered cases for display
     const result = await fetchAllCases(filter)
     if (result.cases) {
       setCases(result.cases as CaseRecord[])
@@ -150,11 +157,11 @@ export function AdminDashboard() {
   }
 
   const counts = {
-    all: cases.length,
-    open: cases.filter((c) => c.status === "open").length,
-    in_progress: cases.filter((c) => c.status === "in_progress").length,
-    resolved: cases.filter((c) => c.status === "resolved").length,
-    closed: cases.filter((c) => c.status === "closed").length,
+    all: allCases.length,
+    open: allCases.filter((c) => c.status === "open").length,
+    in_progress: allCases.filter((c) => c.status === "in_progress").length,
+    resolved: allCases.filter((c) => c.status === "resolved").length,
+    closed: allCases.filter((c) => c.status === "closed").length,
   }
 
   return (
