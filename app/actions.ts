@@ -1,6 +1,13 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+function getSupabase() {
+  return createClient(supabaseUrl, supabaseKey)
+}
 
 function generateCaseNumber(): string {
   const prefix = "CASE"
@@ -10,7 +17,7 @@ function generateCaseNumber(): string {
 }
 
 export async function submitCase(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = getSupabase()
 
   const reporterType = formData.get("reporterType") as string
   const reporterId = formData.get("reporterId") as string
@@ -48,7 +55,7 @@ export async function submitCase(formData: FormData) {
     .single()
 
   if (error) {
-    console.log("[v0] submitCase error:", error)
+    console.log("[v0] submitCase error:", JSON.stringify(error))
     return { error: "Failed to submit your case. Please try again." }
   }
 
@@ -56,7 +63,7 @@ export async function submitCase(formData: FormData) {
 }
 
 export async function fetchAllCases(statusFilter?: string) {
-  const supabase = await createClient()
+  const supabase = getSupabase()
 
   let query = supabase
     .from("cases")
@@ -70,6 +77,7 @@ export async function fetchAllCases(statusFilter?: string) {
   const { data, error } = await query
 
   if (error) {
+    console.log("[v0] fetchAllCases error:", JSON.stringify(error))
     return { error: "Failed to fetch cases." }
   }
 
@@ -81,7 +89,7 @@ export async function updateCaseStatus(
   status: string,
   adminResponse?: string
 ) {
-  const supabase = await createClient()
+  const supabase = getSupabase()
 
   const updateData: Record<string, string> = {
     status,
@@ -98,6 +106,7 @@ export async function updateCaseStatus(
     .eq("id", caseId)
 
   if (error) {
+    console.log("[v0] updateCaseStatus error:", JSON.stringify(error))
     return { error: "Failed to update case." }
   }
 
@@ -105,7 +114,7 @@ export async function updateCaseStatus(
 }
 
 export async function lookupCases(identifier: string) {
-  const supabase = await createClient()
+  const supabase = getSupabase()
 
   const trimmed = identifier.trim()
 
@@ -113,8 +122,6 @@ export async function lookupCases(identifier: string) {
     return { error: "Please enter your GR Number or Employee ID." }
   }
 
-  // Look up by reporter_id OR case_number using separate queries
-  // to avoid issues with special characters in .or() filter
   const { data: byId, error: errById } = await supabase
     .from("cases")
     .select("*")
@@ -128,7 +135,7 @@ export async function lookupCases(identifier: string) {
     .order("created_at", { ascending: false })
 
   if (errById && errByCase) {
-    console.log("[v0] lookupCases errors:", errById, errByCase)
+    console.log("[v0] lookupCases errors:", JSON.stringify(errById), JSON.stringify(errByCase))
     return { error: "Failed to look up cases. Please try again." }
   }
 
