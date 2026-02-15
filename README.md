@@ -2,9 +2,11 @@
 
 Abu Dhabi Indian School, Branch 1, Al Wathba - A self-hosted feedback and issue reporting portal for students and teachers. No login required. Runs fully offline with a built-in SQLite database.
 
+**📖 Quick Links:** [Deployment Guide](DEPLOYMENT.md) | [Quick Start](QUICK-START.md)
+
 ---
 
-## Features
+## ✨ Features
 
 - **Report New Issue** - Students (GR number) or teachers (Employee ID) can submit queries, complaints, or suggestions
 - **Check Case Status** - Look up existing cases by GR/Employee ID or case number
