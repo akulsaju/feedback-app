@@ -1,13 +1,7 @@
 "use server"
 
-import { createClient } from "@supabase/supabase-js"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-function getSupabase() {
-  return createClient(supabaseUrl, supabaseKey)
-}
+import { getDb } from "@/lib/db"
+import { randomUUID } from "crypto"
 
 function generateCaseNumber(): string {
   const prefix = "CASE"
@@ -17,8 +11,6 @@ function generateCaseNumber(): string {
 }
 
 export async function submitCase(formData: FormData) {
-  const supabase = getSupabase()
-
   const reporterType = formData.get("reporterType") as string
   const reporterId = formData.get("reporterId") as string
   const reporterName = formData.get("reporterName") as string
@@ -37,51 +29,54 @@ export async function submitCase(formData: FormData) {
     return { error: "All fields are required." }
   }
 
-  const caseNumber = generateCaseNumber()
+  try {
+    const db = getDb()
+    const id = randomUUID()
+    const caseNumber = generateCaseNumber()
+    const now = new Date().toISOString()
 
-  const { data, error } = await supabase
-    .from("cases")
-    .insert({
-      case_number: caseNumber,
-      reporter_type: reporterType,
-      reporter_id: reporterId.trim(),
-      reporter_name: reporterName.trim(),
+    db.prepare(
+      `INSERT INTO cases (id, case_number, reporter_type, reporter_id, reporter_name, category, subject, description, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)`
+    ).run(
+      id,
+      caseNumber,
+      reporterType,
+      reporterId.trim(),
+      reporterName.trim(),
       category,
-      subject: subject.trim(),
-      description: description.trim(),
-      status: "open",
-    })
-    .select()
-    .single()
+      subject.trim(),
+      description.trim(),
+      now,
+      now
+    )
 
-  if (error) {
-    console.log("[v0] submitCase error:", JSON.stringify(error))
+    return { success: true, caseNumber }
+  } catch (err) {
+    console.error("submitCase error:", err)
     return { error: "Failed to submit your case. Please try again." }
   }
-
-  return { success: true, caseNumber: data.case_number }
 }
 
 export async function fetchAllCases(statusFilter?: string) {
-  const supabase = getSupabase()
+  try {
+    const db = getDb()
 
-  let query = supabase
-    .from("cases")
-    .select("*")
-    .order("created_at", { ascending: false })
+    if (statusFilter && statusFilter !== "all") {
+      const rows = db
+        .prepare("SELECT * FROM cases WHERE status = ? ORDER BY created_at DESC")
+        .all(statusFilter)
+      return { cases: rows }
+    }
 
-  if (statusFilter && statusFilter !== "all") {
-    query = query.eq("status", statusFilter)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
-    console.log("[v0] fetchAllCases error:", JSON.stringify(error))
+    const rows = db
+      .prepare("SELECT * FROM cases ORDER BY created_at DESC")
+      .all()
+    return { cases: rows }
+  } catch (err) {
+    console.error("fetchAllCases error:", err)
     return { error: "Failed to fetch cases." }
   }
-
-  return { cases: data ?? [] }
 }
 
 export async function updateCaseStatus(
@@ -89,68 +84,50 @@ export async function updateCaseStatus(
   status: string,
   adminResponse?: string
 ) {
-  const supabase = getSupabase()
+  try {
+    const db = getDb()
+    const now = new Date().toISOString()
 
-  const updateData: Record<string, string> = {
-    status,
-    updated_at: new Date().toISOString(),
-  }
+    if (adminResponse !== undefined) {
+      db.prepare(
+        "UPDATE cases SET status = ?, admin_response = ?, updated_at = ? WHERE id = ?"
+      ).run(status, adminResponse, now, caseId)
+    } else {
+      db.prepare(
+        "UPDATE cases SET status = ?, updated_at = ? WHERE id = ?"
+      ).run(status, now, caseId)
+    }
 
-  if (adminResponse !== undefined) {
-    updateData.admin_response = adminResponse
-  }
-
-  const { error } = await supabase
-    .from("cases")
-    .update(updateData)
-    .eq("id", caseId)
-
-  if (error) {
-    console.log("[v0] updateCaseStatus error:", JSON.stringify(error))
+    return { success: true }
+  } catch (err) {
+    console.error("updateCaseStatus error:", err)
     return { error: "Failed to update case." }
   }
-
-  return { success: true }
 }
 
 export async function lookupCases(identifier: string) {
-  const supabase = getSupabase()
-
   const trimmed = identifier.trim()
 
   if (!trimmed) {
     return { error: "Please enter your GR Number or Employee ID." }
   }
 
-  const { data: byId, error: errById } = await supabase
-    .from("cases")
-    .select("*")
-    .eq("reporter_id", trimmed)
-    .order("created_at", { ascending: false })
+  try {
+    const db = getDb()
 
-  const { data: byCase, error: errByCase } = await supabase
-    .from("cases")
-    .select("*")
-    .eq("case_number", trimmed)
-    .order("created_at", { ascending: false })
+    const rows = db
+      .prepare(
+        "SELECT * FROM cases WHERE reporter_id = ? OR case_number = ? ORDER BY created_at DESC"
+      )
+      .all(trimmed, trimmed)
 
-  if (errById && errByCase) {
-    console.log("[v0] lookupCases errors:", JSON.stringify(errById), JSON.stringify(errByCase))
+    if (!rows || rows.length === 0) {
+      return { error: "No cases found for this ID or case number." }
+    }
+
+    return { cases: rows }
+  } catch (err) {
+    console.error("lookupCases error:", err)
     return { error: "Failed to look up cases. Please try again." }
   }
-
-  // Merge results and deduplicate by id
-  const allResults = [...(byId ?? []), ...(byCase ?? [])]
-  const seen = new Set<string>()
-  const data = allResults.filter((c) => {
-    if (seen.has(c.id)) return false
-    seen.add(c.id)
-    return true
-  })
-
-  if (!data || data.length === 0) {
-    return { error: "No cases found for this ID or case number." }
-  }
-
-  return { cases: data }
 }
