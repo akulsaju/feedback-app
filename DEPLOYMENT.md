@@ -255,8 +255,13 @@ For advanced users, set up a local DNS server:
 
 **Pi-hole:**
 ```bash
-# Install Pi-hole
-curl -sSL https://install.pi-hole.net | bash
+# Install Pi-hole (review script before running)
+curl -sSL https://install.pi-hole.net -o pi-hole-install.sh
+less pi-hole-install.sh  # Review the script
+bash pi-hole-install.sh
+
+# Or install directly (official method, but executes without review)
+# curl -sSL https://install.pi-hole.net | bash
 
 # Add local DNS entry
 pihole -a addcustomdns 192.168.1.100 feedback.local

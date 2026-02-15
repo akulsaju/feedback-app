@@ -18,10 +18,12 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    echo "Error: Docker Compose is not installed."
-    echo "Please install Docker Compose first."
-    exit 1
+if ! command -v docker-compose &> /dev/null; then
+    if ! docker compose version &> /dev/null 2>&1; then
+        echo "Error: Docker Compose is not installed."
+        echo "Please install Docker Compose first."
+        exit 1
+    fi
 fi
 
 # Get the local IP address

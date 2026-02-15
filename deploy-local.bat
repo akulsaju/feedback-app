@@ -17,14 +17,16 @@ if errorlevel 1 (
 )
 
 REM Check if Docker Compose is available
+set DOCKER_COMPOSE_AVAILABLE=0
 docker-compose --version >nul 2>&1
-if errorlevel 1 (
-    docker compose version >nul 2>&1
-    if errorlevel 1 (
-        echo Error: Docker Compose is not available.
-        pause
-        exit /b 1
-    )
+if not errorlevel 1 set DOCKER_COMPOSE_AVAILABLE=1
+docker compose version >nul 2>&1
+if not errorlevel 1 set DOCKER_COMPOSE_AVAILABLE=1
+
+if %DOCKER_COMPOSE_AVAILABLE%==0 (
+    echo Error: Docker Compose is not available.
+    pause
+    exit /b 1
 )
 
 REM Get local IP address
