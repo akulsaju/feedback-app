@@ -2,9 +2,11 @@
 
 Abu Dhabi Indian School, Branch 1, Al Wathba - A self-hosted feedback and issue reporting portal for students and teachers. No login required. Runs fully offline with a built-in SQLite database.
 
+**📖 Quick Links:** [Deployment Guide](DEPLOYMENT.md) | [Quick Start](QUICK-START.md)
+
 ---
 
-## Features
+## ✨ Features
 
 - **Report New Issue** - Students (GR number) or teachers (Employee ID) can submit queries, complaints, or suggestions
 - **Check Case Status** - Look up existing cases by GR/Employee ID or case number
@@ -31,7 +33,75 @@ Abu Dhabi Indian School, Branch 1, Al Wathba - A self-hosted feedback and issue 
 
 ---
 
-## Requirements
+## 🚀 Quick Deploy as feedback.local (Docker - RECOMMENDED)
+
+The easiest way to deploy on your local network with the `feedback.local` hostname.
+
+### Requirements
+
+- [Docker Desktop](https://docs.docker.com/get-docker/) (Windows/Mac) or Docker Engine (Linux)
+- Docker Compose (included with Docker Desktop)
+
+### Deploy on Windows
+
+1. **Run the deployment script:**
+   ```powershell
+   deploy-local.bat
+   ```
+
+2. **Configure hostname (Run Notepad as Administrator):**
+   - Open: `C:\Windows\System32\drivers\etc\hosts`
+   - Add line: `<YOUR_IP> feedback.local` (IP shown in script output)
+   - Save and close
+
+3. **Allow through firewall:**
+   ```powershell
+   netsh advfirewall firewall add rule name="Feedback App" dir=in action=allow protocol=TCP localport=80
+   ```
+
+4. **Access:** http://feedback.local
+
+### Deploy on Linux/Mac
+
+1. **Run the deployment script:**
+   ```bash
+   chmod +x deploy-local.sh
+   ./deploy-local.sh
+   ```
+
+2. **Configure hostname:**
+   ```bash
+   sudo nano /etc/hosts
+   # Add: <YOUR_IP> feedback.local
+   ```
+
+3. **Access:** http://feedback.local
+
+### Network-Wide Access (Optional)
+
+For all devices on your network to access `feedback.local` without editing hosts files:
+
+1. Login to your router (typically 192.168.1.1 or 192.168.0.1)
+2. Find DNS/Host settings (often under Advanced or LAN settings)
+3. Add DNS entry: `feedback.local` → `<YOUR_SERVER_IP>`
+
+Now any device can access http://feedback.local directly!
+
+### Docker Management Commands
+
+```bash
+docker compose logs -f       # View live logs
+docker compose restart       # Restart the app
+docker compose stop          # Stop the app
+docker compose start         # Start the app
+docker compose down          # Stop and remove containers
+```
+
+---
+
+## Alternative: Manual Setup
+
+### Requirements
 
 - [Node.js](https://nodejs.org/) v18 or later (LTS recommended)
 - npm (comes with Node.js)
