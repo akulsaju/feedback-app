@@ -28,7 +28,6 @@ Abu Dhabi Indian School, Branch 1, Al Wathba - A self-hosted feedback and issue 
 ## Admin Login
 
 - **URL:** `http://<your-ip>/admin`
-- **Password:** `Adis@2025`
 
 ---
 
