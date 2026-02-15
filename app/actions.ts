@@ -1,6 +1,6 @@
 "use server"
 
-import { getDb } from "@/lib/db"
+import { getDb, saveDb } from "@/lib/db"
 import { randomUUID } from "crypto"
 
 function generateCaseNumber(): string {
@@ -8,6 +8,33 @@ function generateCaseNumber(): string {
   const timestamp = Date.now().toString(36).toUpperCase()
   const random = Math.random().toString(36).substring(2, 6).toUpperCase()
   return `${prefix}-${timestamp}-${random}`
+}
+
+interface CaseRow {
+  id: string
+  case_number: string
+  reporter_type: string
+  reporter_id: string
+  reporter_name: string
+  category: string
+  subject: string
+  description: string
+  status: string
+  admin_response: string | null
+  created_at: string
+  updated_at: string
+}
+
+function rowsToObjects(result: { columns: string[]; values: unknown[][] }[]): CaseRow[] {
+  if (!result || result.length === 0 || result[0].values.length === 0) return []
+  const columns = result[0].columns
+  return result[0].values.map((row) => {
+    const obj: Record<string, unknown> = {}
+    columns.forEach((col, i) => {
+      obj[col] = row[i]
+    })
+    return obj as unknown as CaseRow
+  })
 }
 
 export async function submitCase(formData: FormData) {
@@ -30,27 +57,29 @@ export async function submitCase(formData: FormData) {
   }
 
   try {
-    const db = getDb()
+    const db = await getDb()
     const id = randomUUID()
     const caseNumber = generateCaseNumber()
     const now = new Date().toISOString()
 
-    db.prepare(
+    db.run(
       `INSERT INTO cases (id, case_number, reporter_type, reporter_id, reporter_name, category, subject, description, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)`
-    ).run(
-      id,
-      caseNumber,
-      reporterType,
-      reporterId.trim(),
-      reporterName.trim(),
-      category,
-      subject.trim(),
-      description.trim(),
-      now,
-      now
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)`,
+      [
+        id,
+        caseNumber,
+        reporterType,
+        reporterId.trim(),
+        reporterName.trim(),
+        category,
+        subject.trim(),
+        description.trim(),
+        now,
+        now,
+      ]
     )
 
+    saveDb()
     return { success: true, caseNumber }
   } catch (err) {
     console.error("submitCase error:", err)
@@ -60,19 +89,19 @@ export async function submitCase(formData: FormData) {
 
 export async function fetchAllCases(statusFilter?: string) {
   try {
-    const db = getDb()
+    const db = await getDb()
 
+    let result
     if (statusFilter && statusFilter !== "all") {
-      const rows = db
-        .prepare("SELECT * FROM cases WHERE status = ? ORDER BY created_at DESC")
-        .all(statusFilter)
-      return { cases: rows }
+      result = db.exec(
+        "SELECT * FROM cases WHERE status = ? ORDER BY created_at DESC",
+        [statusFilter]
+      )
+    } else {
+      result = db.exec("SELECT * FROM cases ORDER BY created_at DESC")
     }
 
-    const rows = db
-      .prepare("SELECT * FROM cases ORDER BY created_at DESC")
-      .all()
-    return { cases: rows }
+    return { cases: rowsToObjects(result) }
   } catch (err) {
     console.error("fetchAllCases error:", err)
     return { error: "Failed to fetch cases." }
@@ -85,19 +114,22 @@ export async function updateCaseStatus(
   adminResponse?: string
 ) {
   try {
-    const db = getDb()
+    const db = await getDb()
     const now = new Date().toISOString()
 
     if (adminResponse !== undefined) {
-      db.prepare(
-        "UPDATE cases SET status = ?, admin_response = ?, updated_at = ? WHERE id = ?"
-      ).run(status, adminResponse, now, caseId)
+      db.run(
+        "UPDATE cases SET status = ?, admin_response = ?, updated_at = ? WHERE id = ?",
+        [status, adminResponse, now, caseId]
+      )
     } else {
-      db.prepare(
-        "UPDATE cases SET status = ?, updated_at = ? WHERE id = ?"
-      ).run(status, now, caseId)
+      db.run(
+        "UPDATE cases SET status = ?, updated_at = ? WHERE id = ?",
+        [status, now, caseId]
+      )
     }
 
+    saveDb()
     return { success: true }
   } catch (err) {
     console.error("updateCaseStatus error:", err)
@@ -113,15 +145,16 @@ export async function lookupCases(identifier: string) {
   }
 
   try {
-    const db = getDb()
+    const db = await getDb()
 
-    const rows = db
-      .prepare(
-        "SELECT * FROM cases WHERE reporter_id = ? OR case_number = ? ORDER BY created_at DESC"
-      )
-      .all(trimmed, trimmed)
+    const result = db.exec(
+      "SELECT * FROM cases WHERE reporter_id = ? OR case_number = ? ORDER BY created_at DESC",
+      [trimmed, trimmed]
+    )
 
-    if (!rows || rows.length === 0) {
+    const rows = rowsToObjects(result)
+
+    if (rows.length === 0) {
       return { error: "No cases found for this ID or case number." }
     }
 
