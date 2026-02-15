@@ -40,11 +40,11 @@ echo ""
 
 # Stop any existing containers
 echo "Stopping existing containers..."
-docker-compose down 2>/dev/null || true
+docker compose down 2>/dev/null || docker-compose down 2>/dev/null || true
 
 # Build and start the containers
 echo "Building and starting containers..."
-docker-compose up -d --build
+docker compose up -d --build || docker-compose up -d --build
 
 echo ""
 echo "=========================================="
@@ -73,7 +73,7 @@ echo ""
 echo "Admin Dashboard: http://feedback.local/admin"
 echo ""
 echo "Useful commands:"
-echo "  docker-compose logs -f    # View logs"
-echo "  docker-compose stop       # Stop containers"
-echo "  docker-compose restart    # Restart containers"
+echo "  docker compose logs -f    # View logs"
+echo "  docker compose stop       # Stop containers"
+echo "  docker compose restart    # Restart containers"
 echo "=========================================="

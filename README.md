@@ -88,11 +88,11 @@ Now any device can access http://feedback.local directly!
 ### Docker Management Commands
 
 ```bash
-docker-compose logs -f       # View live logs
-docker-compose restart       # Restart the app
-docker-compose stop          # Stop the app
-docker-compose start         # Start the app
-docker-compose down          # Stop and remove containers
+docker compose logs -f       # View live logs
+docker compose restart       # Restart the app
+docker compose stop          # Stop the app
+docker compose start         # Start the app
+docker compose down          # Stop and remove containers
 ```
 
 ---

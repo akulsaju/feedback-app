@@ -41,11 +41,13 @@ echo.
 
 REM Stop any existing containers
 echo Stopping existing containers...
-docker-compose down 2>nul
+docker compose down 2>nul
+if errorlevel 1 docker-compose down 2>nul
 
 REM Build and start the containers
 echo Building and starting containers...
-docker-compose up -d --build
+docker compose up -d --build
+if errorlevel 1 docker-compose up -d --build
 
 echo.
 echo ==========================================
@@ -73,9 +75,9 @@ echo.
 echo Admin Dashboard: http://feedback.local/admin
 echo.
 echo Useful commands:
-echo   docker-compose logs -f    # View logs
-echo   docker-compose stop       # Stop containers
-echo   docker-compose restart    # Restart containers
+echo   docker compose logs -f    # View logs
+echo   docker compose stop       # Stop containers
+echo   docker compose restart    # Restart containers
 echo ==========================================
 echo.
 pause
